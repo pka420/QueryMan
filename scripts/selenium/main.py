@@ -13,11 +13,13 @@ from selenium.common.exceptions import StaleElementReferenceException
 import json
 import os
 from mail import Mailer
-curdir = os.getcwd()
+import datetime
+from dotenv import load_dotenv
+import argparse
 
-with open('targets.json', 'r') as f:
-    data = json.load(f)
-    print(data)
+load_dotenv()
+
+today = datetime.datetime.now().strftime("%d%m%Y")
 
 def switchToNewTab(driver):
     driver.execute_script("window.open('');")
@@ -26,9 +28,18 @@ def switchToNewTab(driver):
 def switchToTab(driver, tab):
     driver.switch_to.window(driver.window_handles[tab])
 
+parser = argparse.ArgumentParser()
 
-chromedriver_path = curdir + "/chromedriver"
-chrome_binary_path = curdir + "/chrome-linux/chrome"
+parser.add_argument("-n", "--hostname", help = "hostname", required = True)
+parser.add_argument("-p", "--port", help = "port", required = True)
+
+# Read arguments from command line
+args = parser.parse_args()
+print(args)
+exit()
+
+chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
+chrome_binary_path = os.getenv("CHROME_PATH")
 
 chrome_options = Options()
 chrome_options.binary_location = chrome_binary_path
@@ -38,28 +49,25 @@ chrome_options.add_argument("--disable-blink-features=AutomationControlled")
 chrome_options.add_argument("--disable-infobars")
 chrome_options.add_argument("--start-maximized")
 chrome_options.add_argument("--disable-extensions")
-chrome_options.add_argument("--headless")
+#chrome_options.add_argument("--headless")
 chrome_options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
+
+chrome_options.add_argument('--proxy-server=http://%s:%s' % (hostname, port))
 
 service = Service(chromedriver_path)
 d = DesiredCapabilities.CHROME
 driver = webdriver.Chrome(service=service, options=chrome_options, desired_capabilities=d)
 driver.maximize_window()
 
-driver.get(data['url'])
-mailer = Mailer(data['sender_email'], data['receiver_email'])
+#driver.get(data['url'])
+driver.get("https://whatismyipaddress.com/")
 try:
-    wait = WebDriverWait(driver, 10)
-    element = wait.until(EC.presence_of_element_located((By.CLASS_NAME, '_351MY')))
-    ads = element.text.split(' ')[0]
-    print(ads)
-    # convert to integer
-    if int(ads) < 6:
-        print("Ads are less than 6")
-        mailer.send_mail("Dyson AirWrap Ads are decreased.", f"Current ads: {ads}")
+    wait = WebDriverWait(driver, 30)
+    #element = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[2]/div/div[2]/div/div/div/div[4]/div')))
+    element = wait.until(EC.presence_of_element_located((By.ID, 'ipv4')))
+    print("Element found")
+    print(element.text)
     driver.quit()
     exit()
 except Exception as e:
-    print(e)
-    print("Element not found")
     driver.quit()

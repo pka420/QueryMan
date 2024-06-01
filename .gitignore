@@ -3,3 +3,4 @@ targets.json
 __pycache__
 .env
 tmp
+*.log
