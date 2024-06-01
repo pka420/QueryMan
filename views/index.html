@@ -1,0 +1,64 @@
+{{ block "index" . }}
+
+<!DOCTYPE html>
+
+<head>
+    <title>Index</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="icon" href="/images/favicon-32x32.png" />
+
+    <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", (event) => {
+            document.body.addEventListener('htmx:beforeSwap', function (evt) {
+                if (evt.detail.xhr.status === 422) {
+                    console.log("setting status to paint");
+                    // allow 422 responses to swap as we are using this as a signal that
+                    // a form was submitted with bad data and want to rerender with the
+                    // errors
+                    //
+                    // set isError to false to avoid error logging in console
+                    evt.detail.shouldSwap = true;
+                    evt.detail.isError = false;
+                }
+            });
+        });
+    </script>
+</head>
+
+
+<body>
+    <div class="hero">
+        <h1>Query Man</h1>
+    </div>
+    {{ template "form" .IsQueryRunning }}
+    </hr>
+    {{ template "data" .DataList }}
+</body>
+
+</html>
+
+{{ end }}
+
+
+{{ block "form" . }}
+<form hx-post="/query" hx-target="this" hx-swap="outerHTML">
+    {{ if . }}
+    <div class="lds-dual-ring"></div>
+    <button disabled >
+        Query X.com for latest topics
+    </button>
+    {{ else }}
+    <button type="submit" >
+        Running Query
+    </button>
+    {{ end }}
+</form>
+{{ end }}
+
+{{ block "data" . }}
+<div id="data" class="data">
+</div>
+{{ end }}
