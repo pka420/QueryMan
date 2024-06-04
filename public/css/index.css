@@ -61,7 +61,6 @@
 }
 
 
-
 .logs table {
     width: 80%;
     margin: 20px auto;
@@ -95,8 +94,4 @@
     font-size: 14px;
 }
 
-
-.table td.collapse.in {
-  display: table-cell;
-}
 

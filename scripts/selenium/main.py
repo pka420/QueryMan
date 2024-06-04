@@ -255,11 +255,13 @@ else:
         today = datetime.datetime.now().strftime("%d%m%Y%H%M%S")
 
         data["date"] = today
+        topics = {}
         for i in range(len(trending_topics)):
             if trending_topics[i].strip() == "":
                 continue
-            data["nameOfTrend{}".format(i)] = trending_topics[i]
+            topics["nameOfTrend{}".format(i)] = trending_topics[i]
 
+        data["topics"] = topics
         with open("trending_topics.json", "w") as file:
             file.write(json.dumps(data))
 

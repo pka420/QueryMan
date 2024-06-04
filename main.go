@@ -84,7 +84,7 @@ func insertLog(client *mongo.Client, log_file string, timestamp time.Time, exitC
 	return nil
 }
 
-func runBashScript(client *mongo.Client) error {
+func runBashScript(client *mongo.Client, pageData *PageData) error {
 	curdir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
@@ -92,7 +92,7 @@ func runBashScript(client *mongo.Client) error {
 	}
 	today := time.Now()
 	todayStr := string(today.Format(logTimeFormat))
-	log_file := curdir + "/logs/Run_" + todayStr + ".log"
+	log_file := curdir + "/public/logs/Run_" + todayStr + ".log"
 
 	script := curdir + "/scripts/selenium/runner.sh"
 
@@ -116,6 +116,10 @@ func runBashScript(client *mongo.Client) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+    pageData.IsRunning = false
+    pageData.DataList = getTrendingData(client)
+
 	return nil
 }
 
@@ -139,7 +143,37 @@ func getLogs(client *mongo.Client) []LogsReadable {
 	for _, log := range logs {
 		var logReadable LogsReadable
 		logReadable.Timestamp = string(log.Timestamp.Format(readableTimeFormat))
-		logReadable.LogFile = log.LogFile
+
+        var logContents string
+        //open log file and copy the contents to a string
+        fmt.Println("Opening file: ", log.LogFile)
+        file, err := os.Open(log.LogFile)
+        if err != nil {
+            fmt.Println("Error opening file: ", err)
+        }
+        defer file.Close()
+        buf := make([]byte, 1024)
+        for {
+            n, err := file.Read(buf)
+            if n == 0 {
+                break
+            }
+            if err != nil {
+
+                fmt.Println("Error reading file: ", err)
+                break
+            }
+            logContents += string(buf[:n])
+        }
+
+
+
+
+
+
+        fmt.Println("logContents: ", logContents)
+
+		logReadable.LogFile = logContents
 		logReadable.ExitCode = log.ExitCode
 		readableLogs = append(readableLogs, logReadable)
 	}
@@ -166,16 +200,17 @@ func getTrendingData(client *mongo.Client) []Data {
 		d.Ip = topic.Ip
 		tmp, err := time.Parse(logTimeFormat, topic.Date)
 		if err != nil {
+            fmt.Println("Error parsing date: ", err)
 			panic(err)
 		}
 		d.Date = string(tmp.Format(readableTimeFormat))
 
-		topicList := make(map[string]string)
+		var topicList map[string]string
+        topicList = make(map[string]string)
 		for _, t := range topic.Topics {
 			topicList[t.Key] = fmt.Sprintf("%v", t.Value)
 		}
 		d.Topics = topicList
-
 		data = append(data, d)
 	}
 	return data
@@ -220,8 +255,6 @@ func main() {
 		logs := getLogs(client)
 		topics := getTrendingData(client)
 
-        fmt.Println("len of topics: ", len(topics))
-
 		pageData.DataList = topics
 		pageData.Logs = logs
 
@@ -229,14 +262,11 @@ func main() {
 	})
 
 	e.POST("/query", func(c echo.Context) error {
-		if isRunning {
+		if pageData.IsRunning {
 			return c.Render(http.StatusOK, "form", pageData.IsRunning)
 		} else {
-			isRunning = true
-			go func() {
-				runBashScript(client)
-			}()
-			isRunning = false
+			pageData.IsRunning = true
+			go runBashScript(client, &pageData)
 		}
 		err := c.Render(http.StatusOK, "form", pageData.IsRunning)
 		if err != nil {
@@ -244,6 +274,10 @@ func main() {
 		}
 		return nil
 	})
+
+    e.GET("/isQueryDone", func(c echo.Context) error {
+        return c.JSON(http.StatusOK, !pageData.IsRunning)
+    })
 
 	e.GET("/data", func(c echo.Context) error {
 		topics := getTrendingData(client)
