@@ -26,6 +26,55 @@
             });
         });
     </script>
+    <style>
+        <style>th {
+            padding: 5px;
+            border-bottom: 1px solid white;
+        }
+
+        table {
+            width: 100%;
+            border-left: none;
+            border-right: none;
+            border-collapse: collapse;
+        }
+
+        .accordion input[name="collapse"] {
+            display: none;
+        }
+
+        .accordion .content {
+        }
+
+        .accordion .wrappervideo {
+            display: none;
+        }
+
+        .accordion label {
+            color: #fff;
+            cursor: pointer;
+            font-weight: normal;
+            padding: 5px;
+            width: auto;
+            display: block;
+        }
+
+        .accordion label:hover,
+        .accordion label:focus {
+            background: #00AGD7;
+            color: #000;
+        }
+
+        .accordion input[name="collapse"]:checked~.topicsList {
+            display: initial;
+        }
+
+        .handle {
+            background: #00ACD7;
+        }
+
+    </style>
+    </style>
 </head>
 
 
@@ -33,32 +82,92 @@
     <div class="hero">
         <h1>Query Man</h1>
     </div>
-    {{ template "form" .IsQueryRunning }}
+    {{ template "form" .IsRunning }}
     </hr>
     {{ template "data" .DataList }}
+    </hr>
+    {{ template "logs" .Logs }}
 </body>
 
+<footer>
+    This website is proudly served by Go and htmx
+    Query script is simple bash script that runs python script to query X.com
+</footer>
 </html>
 
 {{ end }}
 
 
 {{ block "form" . }}
-<form hx-post="/query" hx-target="this" hx-swap="outerHTML">
-    {{ if . }}
-    <div class="lds-dual-ring"></div>
-    <button disabled >
-        Query X.com for latest topics
-    </button>
-    {{ else }}
-    <button type="submit" >
-        Running Query
-    </button>
-    {{ end }}
-</form>
+<div>
+    <form hx-post="/query" hx-target="this" hx-swap="outerHTML">
+        <h2>Query</h2>
+        {{ if . }}
+        <div class="lds-dual-ring"></div>
+        <button disabled>
+            Query already running
+        </button>
+        {{ else }}
+        <button type="submit">
+            Query X.com for latest topics
+        </button>
+        {{ end }}
+    </form>
+</div>
 {{ end }}
 
 {{ block "data" . }}
-<div id="data" class="data">
+<div>
+    <h2>Data</h2>
+    <div class="logs">
+        <section class="accordion">
+            <table style="text-align:center">
+                <tr>
+                    <th>Ip address</th>
+                    <th>Timestamp Code</th>
+                    <th>List of Topics</th>
+                </tr>
+                {{range $index, $item := . }}
+                <tr>
+                    <td>{{.Ip}}</td>
+                    <td>{{.Date}}</td>
+                    <td class="handle"><label for="handle{{$index}}"> Toggle Expand </label></td>
+                </tr>
+
+                <tr>
+                    <td colspan="5" class="content">
+                        <input type="checkbox" name="collapse" id="handle{{$index}}" />
+                        <div class="topicsList${{index}}">
+                            {{ range $key, $value := .Topics }}
+                            <li><strong>{{ $key }}</strong>: {{ $value }}</li>
+                            {{ end }}
+                        </div>
+
+                    </td>
+                </tr>
+                {{end}}
+            </table>
+        </section>
+    </div>
+</div>
+{{ end }}
+
+{{ block "logs" . }}
+<div>
+    <h2>Logs</h2>
+    <div class="logs">
+        <table border="1">
+            <tr>
+                <th>Timestamp</th>
+                <th>Exit Code</th>
+            </tr>
+            {{range .}}
+            <tr>
+                <td>{{.Timestamp}}</td>
+                <td>{{.ExitCode}}</td>
+            </tr>
+            {{end}}
+        </table>
+    </div>
 </div>
 {{ end }}
