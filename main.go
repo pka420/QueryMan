@@ -104,13 +104,11 @@ func runBashScript(client *mongo.Client, pageData *PageData) error {
 
 	exitCode := 0
 	cmd := exec.Command(script, args...)
-	fmt.Println("Running command: ", cmd.String())
 	out, err := cmd.Output()
 	if err != nil {
 		fmt.Println(err)
 		exitCode = 1
 	}
-	fmt.Println("stdout: ", string(out))
 
 	err = insertLog(client, log_file, today, exitCode)
 	if err != nil {
@@ -138,15 +136,12 @@ func getLogs(client *mongo.Client) []LogsReadable {
 		panic(err)
 	}
 
-	//convert to readable logs
 	var readableLogs []LogsReadable
 	for _, log := range logs {
 		var logReadable LogsReadable
 		logReadable.Timestamp = string(log.Timestamp.Format(readableTimeFormat))
 
         var logContents string
-        //open log file and copy the contents to a string
-        fmt.Println("Opening file: ", log.LogFile)
         file, err := os.Open(log.LogFile)
         if err != nil {
             fmt.Println("Error opening file: ", err)
@@ -159,19 +154,11 @@ func getLogs(client *mongo.Client) []LogsReadable {
                 break
             }
             if err != nil {
-
                 fmt.Println("Error reading file: ", err)
                 break
             }
             logContents += string(buf[:n])
         }
-
-
-
-
-
-
-        fmt.Println("logContents: ", logContents)
 
 		logReadable.LogFile = logContents
 		logReadable.ExitCode = log.ExitCode
