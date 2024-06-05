@@ -92,7 +92,7 @@ func runBashScript(client *mongo.Client, pageData *PageData) error {
 	}
 	today := time.Now()
 	todayStr := string(today.Format(logTimeFormat))
-	log_file := curdir + "/public/logs/Run_" + todayStr + ".log"
+	log_file := curdir + "/logs/Run_" + todayStr + ".log"
 
 	script := curdir + "/scripts/selenium/runner.sh"
 
@@ -109,6 +109,7 @@ func runBashScript(client *mongo.Client, pageData *PageData) error {
 		fmt.Println(err)
 		exitCode = 1
 	}
+    fmt.Println(string(out))
 
 	err = insertLog(client, log_file, today, exitCode)
 	if err != nil {

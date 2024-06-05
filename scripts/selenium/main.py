@@ -196,7 +196,7 @@ else:
         wait = WebDriverWait(driver, 30)
         element = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[4]/label/div/div[2]/div/input')))
         if element:
-            element.send_keys("pka420@proton.me")
+            element.send_keys(os.environ.get("EMAIL"))
         else:
             print("email input not found")
 
@@ -223,7 +223,7 @@ else:
         wait = WebDriverWait(driver, 30)
         element = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="layers"]/div[2]/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div[1]/div/div/div[3]/div/label/div/div[2]/div[1]/input')))
         if element:
-            element.send_keys("Teraminx@2347")
+            element.send_keys(os.environ.get("PASSWORD"))
         else:
             print("password input not found")
 
