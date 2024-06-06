@@ -36,9 +36,9 @@
 </head>
 
 
-<body>
+<body style="padding: 20px;">
     <div class="hero">
-        <h1>Query Man</h1>
+        <h1>Query Man -- <a href="https://github.com/pka420/QueryMan" target="_blank">github</a> </h1>
     </div>
     {{ template "form" .IsRunning }}
     </hr>
@@ -48,8 +48,9 @@
 </body>
 
 <footer>
-    This website is proudly served by Go and htmx
-    Query script is simple bash script that runs python script to query X.com
+    This website is proudly served by Go and htmx. <br> </br>
+    Query script is simple python script that runs selenium to query X.com <br></br>
+    MADE IN DELHI
 </footer>
 
 </html>
@@ -81,7 +82,7 @@
                             window.location.reload();
                         }
                     });
-            }, 2000);
+            }, 5000);
         }
                 else {
             console.log("Query is not running");
@@ -147,6 +148,7 @@
             <tr>
                 <th>Timestamp</th>
                 <th>Exit Code</th>
+                <th>Logs</th>
             </tr>
             {{range $index, $data := . }}
             <tr>

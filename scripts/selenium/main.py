@@ -160,15 +160,19 @@ args = parser.parse_args()
 chromedriver_path = os.getenv("CHROMEDRIVER_PATH")
 chrome_binary_path = os.getenv("CHROME_PATH")
 
+chrome_options = Options()                                                                                                                                                                                     
+chrome_options.binary_location = chrome_binary_path                                                                                                                                                            
 chrome_options = Options()
 chrome_options.binary_location = chrome_binary_path
 chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--remote-allow-origins=*")
 chrome_options.add_argument("--disable-blink-features=AutomationControlled")
 chrome_options.add_argument("--disable-infobars")
 chrome_options.add_argument("--start-maximized")
 chrome_options.add_argument("--disable-extensions")
-#chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--crash-dumps-dir=/tmp")
 chrome_options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
 
 print("Proxy: %s:%s" % (args.hostname, args.port))
